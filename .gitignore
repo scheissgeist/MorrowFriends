@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+output/
+tmp/
+backups/
+.playwright-cli/
+*.spec.bak
+*.bak
+.pytest_cache/
+*.log
+.DS_Store
+
+# Local configuration and signing material
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Internal operations/history are deliberately not part of the public repo.
+docs/ADMIN_PANEL.md
+docs/HOST_DOMAIN_SERVICE_MAP_*.md
+docs/PUBLIC_SERVER_PLAN.md
+docs/SESSION_LOG_*.md
+docs/SESSION_ROLLUP_*.md
+docs/SKYHOLE_DEPLOYMENT.md
+docs/TAILSCALE_HOST_SETUP.md
+voice_service/deploy/docker-compose.skyhole.yml
+voice_service/deploy/redis.skyhole.conf

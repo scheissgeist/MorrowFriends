@@ -1,0 +1,37 @@
+MORROWFRIENDS v0.7.4 - PRESS PLAY
+
+You need Morrowind (GOTY) installed. Nothing else. No Tailscale, no accounts,
+no links to paste.
+
+1. Right-click the ZIP and choose Extract All. Do not run the EXE from inside
+   the ZIP.
+2. Run MorrowFriends.exe.
+3. Type your character name under "You are" if you already have one. First
+   time: type the name you will create, or leave it blank - voice picks it up
+   when you log in.
+4. Click Play. MorrowFriends finds Morrowind, starts TES3MP, and joins the
+   party. There is no server password.
+5. First time only: TES3MP asks you to create a character password. Write it
+   down - you need it every time you play this character.
+6. Keep MorrowFriends running. Voice opens in this window when your
+   character loads (Back returns to Play). A nearby strip stays on top of
+   the game for /goto and push-to-talk.
+
+Voice is optional. The gear has "Join voice when I play" and Push-to-talk
+(default Space). Change the key there — it works while Morrowind has focus.
+
+IF SOMETHING IS STUCK
+
+Click the gear in the top right (same window, Back returns to Play):
+  - Voice: join on Play, and the push-to-talk key
+  - Game files: where Morrowind is
+  - If something is stuck: Install C++, Repair TES3MP, Voice position
+
+If Play fails it says why on the main screen and shows a "Fix this" button.
+
+TELEPORTING
+
+In TES3MP chat, /goto works:
+  /goto Gorid
+
+Or click a name on the nearby strip.

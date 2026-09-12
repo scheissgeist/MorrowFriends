@@ -1,0 +1,12 @@
+*
+!app/
+!app/__init__.py
+!app/voice.py
+!voice_service/
+!voice_service/__init__.py
+!voice_service/core.py
+!voice_service/server.py
+!voice_service/Dockerfile
+!voice_service/requirements.txt
+!voice_service/static/
+!voice_service/static/**

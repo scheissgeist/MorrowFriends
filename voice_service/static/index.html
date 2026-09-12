@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MorrowFriends Voice</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/livekit-client@2.21.0/dist/livekit-client.umd.min.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">MorrowFriends</p>
+        <h1>Voice</h1>
+      </div>
+      <span id="connection-badge" class="badge" aria-live="polite">Not connected</span>
+    </header>
+
+    <section id="claim-panel" class="panel" aria-labelledby="join-title">
+      <h2 id="join-title">Voice</h2>
+      <p class="instructions">Attaches when your character finishes logging in — including a new one.</p>
+      <input id="party-id" name="party" type="hidden" maxlength="64">
+      <p id="claim-status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="voice-panel" class="panel hidden" aria-labelledby="voice-title">
+      <div class="voice-heading">
+        <div>
+          <p class="eyebrow">Connected as</p>
+          <h2 id="voice-title">—</h2>
+        </div>
+        <button id="enable-audio" class="secondary hidden" type="button">Enable sound</button>
+      </div>
+
+      <button id="push-to-talk" class="talk" type="button" disabled>
+        <span class="talk-label">Hold to talk</span>
+        <span class="talk-key">Space or hold this button</span>
+      </button>
+      <div class="binding-row">
+        <div>
+          <span class="binding-label">Push-to-talk</span>
+          <strong id="binding-value">Space</strong>
+        </div>
+        <button id="bind-button" class="secondary" type="button">Change</button>
+      </div>
+      <p id="binding-status" class="binding-status" aria-live="polite"></p>
+      <p id="voice-status" class="status" role="status" aria-live="polite">
+        Connecting microphone…
+      </p>
+
+      <div class="nearby-heading">
+        <h3>Nearby</h3>
+        <span id="position-status">Waiting for game positions</span>
+      </div>
+      <div id="participants" class="participants">
+        <p class="empty">No one else in voice yet.</p>
+      </div>
+      <div id="audio-root" aria-hidden="true"></div>
+    </section>
+
+    <footer>
+      Different interiors cannot hear each other. Stale positions mute everyone.
+    </footer>
+  </main>
+</body>
+</html>

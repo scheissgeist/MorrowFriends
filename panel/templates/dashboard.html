@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MorrowFriends — server admin</title>
+<style>
+  :root {
+    --bg:#0a090b; --panel:#16131a; --line:#2a2530; --field:#0e0c11;
+    --text:#f0ebe6; --muted:#9c938c; --bone:#e6dccb; --ember:#c45a3a;
+    --ok:#8fbc7a; --warn:#c9a05a; --danger:#9d443c;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:14px/1.5 "Bahnschrift","Segoe UI",system-ui,sans-serif; }
+  header { padding:22px 26px 14px; border-bottom:1px solid var(--line); }
+  h1 { margin:0; font-size:22px; font-weight:600; letter-spacing:.2px; }
+  .sub { color:var(--muted); font-size:12px; margin-top:2px; }
+  main { padding:22px 26px 60px; max-width:1600px; }
+  section { margin-bottom:34px; }
+  h2 { font-size:15px; font-weight:600; margin:0 0 12px; }
+  .warn-banner { border:1px solid var(--danger); background:#2a1214;
+                 padding:10px 14px; margin-bottom:20px; font-size:13px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-weight:500; color:var(--muted); font-size:12px;
+       padding:6px 10px; border-bottom:1px solid var(--line); }
+  td { padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  .rule-help { color:var(--muted); font-size:12px; }
+  button { background:var(--field); color:var(--text); border:1px solid var(--line);
+           padding:5px 12px; cursor:pointer; font:inherit; font-size:13px; border-radius:2px; }
+  button:hover { background:#2c2732; }
+  button.primary { background:var(--bone); color:#07060a; border-color:var(--bone); }
+  button.danger { background:var(--danger); border-color:var(--danger); }
+  input[type=text], input[type=password] {
+    background:var(--field); border:1px solid var(--line); color:var(--text);
+    padding:6px 9px; font:inherit; font-size:13px; border-radius:2px; }
+  .toggle { min-width:64px; }
+  .on  { color:var(--ok); }
+  .off { color:var(--muted); }
+  .owner { color:var(--ember); }
+  .row { display:flex; gap:8px; align-items:center; }
+  .empty { color:var(--muted); }
+  #flash { position:fixed; right:18px; bottom:18px; background:var(--panel);
+           border:1px solid var(--line); padding:10px 14px; font-size:13px;
+           opacity:0; transition:opacity .2s; }
+  #flash.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MorrowFriends</h1>
+  <div class="sub">Server administration</div>
+</header>
+<main>
+
+{% if broken %}
+<div class="warn-banner">
+  <strong>These accounts will crash the server when they log in:</strong>
+  {{ broken|join(", ") }}.
+  They have a character but no password credentials. Set a password below to fix.
+</div>
+{% endif %}
+
+<section>
+  <h2>Connected now</h2>
+  {% if online %}
+  <table>
+    <tr><th>Player</th><th>Location</th><th></th></tr>
+    {% for p in online %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td class="rule-help">{{ p.cell or "—" }}</td>
+      <td>
+        <button class="danger" onclick="kick('{{ p.name }}')">Kick</button>
+        <button class="danger" onclick="banPlayer('{{ p.name }}')">Ban</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="empty">No players connected.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Rules</h2>
+  <table>
+    {% for rule in rules %}
+    <tr>
+      <td style="width:230px">{{ rule.label }}</td>
+      <td class="rule-help">{{ rule.help }}</td>
+      <td style="width:90px">
+        <button class="toggle" id="rule-{{ rule.key }}"
+                onclick="toggleRule('{{ rule.key }}')">
+          {% if values.get(rule.key) %}<span class="on">ON</span>
+          {% else %}<span class="off">OFF</span>{% endif %}
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h2>Characters</h2>
+  <table>
+    <tr><th>Name</th><th>Rank</th><th>Console</th><th>Password</th></tr>
+    {% for p in players %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>
+        {% if p.staff_rank >= owner_rank %}<span class="owner">Owner</span>
+        {% elif p.staff_rank > 0 %}Moderator
+        {% else %}Player{% endif %}
+      </td>
+      <td>{{ "yes" if p.console_allowed else "no" }}</td>
+      <td>
+        <div class="row">
+          {% if p.staff_rank >= owner_rank %}
+          <button onclick="setRank('{{ p.name }}', 0, false)">Demote</button>
+          {% else %}
+          <button onclick="setRank('{{ p.name }}', {{ owner_rank }}, true)">Make owner</button>
+          {% endif %}
+          <input type="password" id="pw-{{ p.name }}" placeholder="new password">
+          <button onclick="setPassword('{{ p.name }}')">Set</button>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h2>Guild standing</h2>
+  {% set expelled = players|selectattr("expelled_from")|list %}
+  {% if expelled %}
+  <table>
+    <tr><th>Player</th><th>Expelled from</th><th></th></tr>
+    {% for p in expelled %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td class="rule-help">{{ p.expelled_from|join(", ") }}</td>
+      <td style="width:150px">
+        <button onclick="clearExpulsion('{{ p.name }}')">Lift expulsion</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  <div class="row" style="margin-top:12px">
+    <button class="primary" onclick="clearAllExpulsions()">Lift all expulsions</button>
+    <span class="rule-help">
+      Connected players are updated in the game within about a second; everyone
+      else is updated in their saved character.
+    </span>
+  </div>
+  {% else %}
+  <p class="empty">Nobody is expelled from a guild.</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>Broadcast</h2>
+  <div class="row">
+    <input type="text" id="broadcast" placeholder="Message to all players" style="flex:1">
+    <button class="primary" onclick="broadcast()">Send</button>
+  </div>
+</section>
+
+</main>
+<div id="flash"></div>
+<script>
+function flash(msg) {
+  const el = document.getElementById('flash');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+async function post(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+  return res.json().catch(() => ({ok:false, error:'bad response'}));
+}
+async function toggleRule(key) {
+  const btn = document.getElementById('rule-' + key);
+  const currentlyOn = btn.textContent.trim() === 'ON';
+  const out = await post('api/rule', {key: key, value: !currentlyOn});
+  if (out.ok) {
+    // Render the value the SERVER confirmed, not what we asked for.
+    btn.innerHTML = out.value
+      ? '<span class="on">ON</span>' : '<span class="off">OFF</span>';
+    flash(key + ' set to ' + (out.value ? 'ON' : 'OFF'));
+  } else {
+    flash('Failed: ' + (out.error || key));
+  }
+}
+async function setRank(name, rank, allowConsole) {
+  const out = await post('api/player/rank', {name: name, rank: rank, console: allowConsole});
+  flash(out.ok ? name + ' updated' : 'Failed to update ' + name);
+  if (out.ok) location.reload();
+}
+async function setPassword(name) {
+  const field = document.getElementById('pw-' + name);
+  if (!field.value) { flash('Enter a password first'); return; }
+  const out = await post('api/player/password', {name: name, password: field.value});
+  field.value = '';
+  flash(out.ok ? name + ' password set' : 'Failed: ' + (out.error || name));
+  if (out.ok) location.reload();
+}
+async function kick(name) {
+  const out = await post('api/player/kick', {name: name});
+  flash(out.ok ? 'Kick queued for ' + name : 'Failed');
+}
+async function banPlayer(name) {
+  if (!confirm('Ban ' + name + ' and their known IP addresses?')) return;
+  const out = await post('api/player/ban', {name: name});
+  flash(out.ok ? 'Ban queued for ' + name : 'Failed');
+}
+async function clearExpulsion(name) {
+  const out = await post('api/player/expulsion', {name: name});
+  if (!out.ok) { flash('Failed: ' + (out.error || name)); return; }
+  // A queued change is applied by the server on its next poll, so the record on
+  // disk has not caught up yet — reloading immediately would redraw the player
+  // as still expelled.
+  if (out.route === 'queued') flash(name + ' — lifting in game');
+  else { flash(name + ' expulsion lifted'); location.reload(); }
+}
+async function clearAllExpulsions() {
+  const out = await post('api/expulsion/clear-all', {});
+  flash(out.ok ? 'Expulsions lifted' : 'Failed for: ' + (out.failed || []).join(', '));
+}
+async function broadcast() {
+  const field = document.getElementById('broadcast');
+  if (!field.value.trim()) return;
+  const out = await post('api/broadcast', {message: field.value});
+  if (out.ok) { field.value = ''; flash('Broadcast sent'); }
+  else flash('Failed to broadcast');
+}
+</script>
+</body>
+</html>

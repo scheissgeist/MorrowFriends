@@ -1,0 +1,75 @@
+# Linux/Hetzner only: LiveKit recommends host networking for WebRTC performance.
+services:
+  caddy:
+    image: livekit/caddyl4
+    command: run --config /etc/caddy.yaml --adapter yaml
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./caddy.yaml:/etc/caddy.yaml:ro
+      - ./caddy_data:/data
+    depends_on:
+      relay:
+        condition: service_healthy
+      livekit:
+        condition: service_started
+
+  relay:
+    build:
+      context: ../..
+      dockerfile: voice_service/Dockerfile
+    command:
+      - uvicorn
+      - voice_service.server:app_from_env
+      - --factory
+      - --host
+      - 127.0.0.1
+      - --port
+      - "8080"
+      - --ws
+      - websockets-sansio
+      - --proxy-headers
+      - --forwarded-allow-ips=127.0.0.1
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  livekit:
+    image: livekit/livekit-server:v1.13.1
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server /etc/redis.conf
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./redis.conf:/etc/redis.conf:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

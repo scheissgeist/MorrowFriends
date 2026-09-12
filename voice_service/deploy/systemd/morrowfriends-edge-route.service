@@ -1,0 +1,8 @@
+[Unit]
+Description=Restore MorrowFriends routes in Skyhole's shared Caddyfile
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/morrowfriends/voice_service/deploy/ensure-edge-route.sh

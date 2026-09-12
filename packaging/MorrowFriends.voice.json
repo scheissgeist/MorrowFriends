@@ -1,0 +1,7 @@
+{
+  "allowed_origins": [
+    "https://voice.gamebrain.win"
+  ],
+  "default_page": "https://voice.gamebrain.win/",
+  "default_party": "broteam-morrowind"
+}
