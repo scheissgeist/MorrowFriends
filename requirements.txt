@@ -6,4 +6,4 @@ pywebview>=5.0,<6.0
 # app/voice_embed.py hosts WebView2 in the launcher window through pythonnet.
 # pywebview pulls this in on Windows, but voice_embed imports clr directly, so
 # pin it rather than relying on a transitive dependency.
-pythonnet>=3.0,<4.0
+pythonnet>=3.1.0,<4.0
