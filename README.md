@@ -23,8 +23,9 @@ MorrowFriends does **not** include or redistribute Bethesda game files.
 
 ## Playing
 
-1. Download and extract `MorrowFriends-v0.7.4-Windows.zip`.
-2. Run `MorrowFriends.exe`.
+1. Download and extract `MorrowFriends-v0.7.5-Windows.zip`.
+2. Open the extracted `MorrowFriends` folder and run `MorrowFriends.exe`. Keep
+   it next to its `_internal` folder.
 3. Enter the account name you already use in TES3MP, or leave it blank while
    creating your first character.
 4. Press **Play**.
@@ -65,11 +66,18 @@ python run.py
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
+powershell -File packaging/build_bootloader.ps1 -Python .venv\Scripts\python.exe
 powershell -File packaging/build.ps1 -Python .venv\Scripts\python.exe
 ```
 
-The build writes `dist/MorrowFriends.exe` and a versioned ZIP to the current
-user's Desktop. Signing is used automatically when a local signing certificate
+`build_bootloader.ps1` compiles PyInstaller's bootloader from source (needs
+Visual Studio Build Tools), so the launcher does not share its bootloader bytes
+with every other PyInstaller-built program, including malware. v0.7.4, built
+with the stock bootloader, was flagged by several antivirus engines.
+`build.ps1` refuses to build with the stock bootloader.
+
+The build writes the one-folder app to `dist/MorrowFriends/` and a versioned
+ZIP to the current user's Desktop. Signing is used automatically when a local signing certificate
 is configured through `MORROWFRIENDS_PFX`.
 
 ## Support and security

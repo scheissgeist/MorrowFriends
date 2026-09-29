@@ -1,10 +1,43 @@
 # -*- mode: python ; coding: utf-8 -*-
 # Build: powershell -File packaging/build.ps1
 
+import os
+import re
 from pathlib import Path
+
+from PyInstaller.utils.win32 import versioninfo as vi
 
 block_cipher = None
 SPEC_DIR = Path(SPECPATH)
+# MF_ONEDIR=1 builds a folder (MorrowFriends/MorrowFriends.exe + _internal/)
+# instead of one self-extracting exe. One-file PyInstaller exes unpack a Python
+# runtime into %TEMP% at launch, which is the dropper-like shape AV ML models flag.
+ONEDIR = os.environ.get("MF_ONEDIR") == "1"
+
+# Windows version resource, single-sourced from app/paths.py APP_VERSION.
+# An unsigned exe with no publisher/product metadata scores worse with
+# Defender's cloud ML (v0.7.4 had none and hit Trojan:Win32/Wacatac.C!ml).
+_ver_src = (SPEC_DIR.parent / "app" / "paths.py").read_text(encoding="utf-8")
+APP_VERSION = re.search(r'^APP_VERSION\s*=\s*"([^"]+)"', _ver_src, re.M).group(1)
+_vt = tuple((int(p) for p in (APP_VERSION.split(".") + ["0", "0", "0"])[:4]))
+VERSION_INFO = vi.VSVersionInfo(
+    ffi=vi.FixedFileInfo(filevers=_vt, prodvers=_vt, mask=0x3F, flags=0x0, OS=0x40004, fileType=0x1, subtype=0x0),
+    kids=[
+        vi.StringFileInfo([
+            vi.StringTable("040904B0", [
+                vi.StringStruct("CompanyName", "MorrowFriends contributors"),
+                vi.StringStruct("FileDescription", "MorrowFriends - TES3MP co-op launcher for Morrowind"),
+                vi.StringStruct("FileVersion", APP_VERSION),
+                vi.StringStruct("InternalName", "MorrowFriends"),
+                vi.StringStruct("LegalCopyright", "Copyright (c) 2026 MorrowFriends contributors. MIT License."),
+                vi.StringStruct("OriginalFilename", "MorrowFriends.exe"),
+                vi.StringStruct("ProductName", "MorrowFriends"),
+                vi.StringStruct("ProductVersion", APP_VERSION),
+            ])
+        ]),
+        vi.VarFileInfo([vi.VarStruct("Translation", [0x0409, 1200])]),
+    ],
+)
 ICON = SPEC_DIR / "morrowfriends.ico"
 PNG = SPEC_DIR / "morrowfriends.png"
 icon_arg = str(ICON) if ICON.is_file() else None
@@ -62,20 +95,14 @@ a = Analysis(
 )
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    [],
+_exe_opts = dict(
     name="MorrowFriends",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
+    # UPX was never installed on the build machine, so upx=True was a no-op;
+    # keep it off explicitly, packed exes are an AV red flag.
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -83,4 +110,14 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=icon_arg,
+    version=VERSION_INFO,
 )
+
+if ONEDIR:
+    # MF_APPEND_PKG=0 writes MorrowFriends.pkg beside the exe instead of appending
+    # it as a PE overlay, leaving the exe as bare bootloader + resources.
+    exe = EXE(pyz, a.scripts, [], exclude_binaries=True,
+              append_pkg=os.environ.get("MF_APPEND_PKG", "1") != "0", **_exe_opts)
+    coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas, strip=False, upx=False, name="MorrowFriends")
+else:
+    exe = EXE(pyz, a.scripts, a.binaries, a.zipfiles, a.datas, [], runtime_tmpdir=None, **_exe_opts)

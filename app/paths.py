@@ -7,7 +7,7 @@ from pathlib import Path
 
 APP_NAME = "MorrowFriends"
 LEGACY_APP_NAME = "MorrowindFriends"
-APP_VERSION = "0.7.4"
+APP_VERSION = "0.7.5"
 
 # Pinned multiplayer engine — host and guests must match.
 TES3MP_VERSION = "0.8.1"
