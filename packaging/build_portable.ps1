@@ -48,6 +48,9 @@ foreach ($f in "DLLs\_tkinter.pyd", "DLLs\tcl86t.dll", "DLLs\tk86t.dll") {
 New-Item -ItemType Directory -Force -Path (Join-Path $runtime "Lib") | Out-Null
 Copy-Item (Join-Path $basePrefix "Lib\tkinter") (Join-Path $runtime "Lib\tkinter") -Recurse -Force
 Copy-Item (Join-Path $basePrefix "tcl") (Join-Path $runtime "tcl") -Recurse -Force
+# tkinter's own test suite is not needed at runtime, and pytest would collect it.
+$tkTests = Join-Path $runtime "Lib\tkinter\test"
+if (Test-Path $tkTests) { Remove-Item $tkTests -Recurse -Force }
 Get-ChildItem $runtime -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -Force
 
 # 3. Import path: stdlib zip, runtime, tkinter, bundled packages, app root.
