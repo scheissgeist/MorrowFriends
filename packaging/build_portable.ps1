@@ -83,8 +83,28 @@ Copy-Item "packaging\tes3mp_custom_scripts\*.lua" (Join-Path $pk "tes3mp_custom_
 foreach ($doc in "LICENSE", "PRIVACY.md", "THIRD_PARTY_NOTICES.md", "packaging\START HERE - MorrowFriends.txt") {
     Copy-Item $doc $stage
 }
-$bat = "@echo off`r`nrem MorrowFriends launcher. Runs the bundled Python; nothing is installed.`r`nstart `"`" `"%~dp0runtime\pythonw.exe`" `"%~dp0run.py`" %*`r`n"
-[IO.File]::WriteAllText((Join-Path $stage "MorrowFriends.bat"), $bat, (New-Object Text.ASCIIEncoding))
+# The guard matters: double-clicking the .bat inside WinRAR/7-Zip/Explorer's ZIP
+# view unpacks only the .bat to a temp folder (seen 2026-09-30), and without it
+# the user just gets "Windows cannot find ...\runtime\pythonw.exe".
+$batLines = @(
+    '@echo off',
+    'rem MorrowFriends launcher. Runs the bundled Python; nothing is installed.',
+    'if not exist "%~dp0runtime\pythonw.exe" goto notextracted',
+    'start "" "%~dp0runtime\pythonw.exe" "%~dp0run.py" %*',
+    'exit /b 0',
+    ':notextracted',
+    'title MorrowFriends',
+    'echo.',
+    'echo   MorrowFriends has to be extracted before it can run.',
+    'echo.',
+    'echo   You opened it from inside the ZIP, so the rest of its files are missing.',
+    'echo   Close this window, right-click the ZIP, choose "Extract All",',
+    'echo   then open the extracted MorrowFriends folder and run MorrowFriends.bat.',
+    'echo.',
+    'pause',
+    'exit /b 1'
+)
+[IO.File]::WriteAllText((Join-Path $stage "MorrowFriends.bat"), (($batLines -join "`r`n") + "`r`n"), (New-Object Text.ASCIIEncoding))
 
 # 6. Every exe that ships must carry a valid signature.
 $unsigned = Get-ChildItem $stage -Recurse -Filter *.exe | Where-Object { (Get-AuthenticodeSignature $_.FullName).Status -ne "Valid" }
