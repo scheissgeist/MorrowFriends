@@ -83,9 +83,8 @@ Desktop, and fails if any `.exe` in the release lacks a valid signature.
 
 Releases up to v0.7.4 were a PyInstaller executable. Antivirus engines,
 including Microsoft Defender, flag fresh unsigned PyInstaller executables, so
-that packaging (`build.ps1`, `morrowfriends.spec`) is no longer used for
-releases. `defender_gate.ps1` checks files against the local Microsoft Defender
-the way a browser download is checked.
+that packaging was removed. `defender_gate.ps1` checks files against the local
+Microsoft Defender the way a browser download is checked.
 
 ## Support and security
 

@@ -6,15 +6,17 @@ Windows. Setup is once, and there is no Tailscale any more.
 
 - Morrowind Game of the Year Edition from Steam or GOG (includes Tribunal and
   Bloodmoon).
-- `MorrowFriends.exe` from the host.
+- The MorrowFriends ZIP from the host or from
+  [GitHub Releases](https://github.com/scheissgeist/MorrowFriends/releases/latest).
 
 That is the whole list. No accounts, no invite links, no network setup.
 
 ## 1. Open MorrowFriends
 
-1. Save `MorrowFriends.exe` somewhere easy to find.
-2. Double-click it.
-3. Windows may warn that the app is unsigned. Click **More info**, then
+1. Right-click the ZIP and choose **Extract All**. Put the extracted
+   `MorrowFriends` folder somewhere easy to find.
+2. Open that folder and double-click `MorrowFriends.bat`.
+3. Windows may ask whether to run it. Click **More info**, then
    **Run anyway**.
 4. Wait for the top of the launcher to say Morrowind GOTY was found.
 5. If it was not found, click **Change** and pick either your Morrowind

@@ -105,14 +105,16 @@ class FriendlyFireInstallTests(unittest.TestCase):
         self.assertIn('require("custom/morrowfriends_friendly_fire")', config)
         self.assertIn("custom/morrowfriends_friendly_fire", config)
 
-    def test_the_frozen_build_ships_the_script(self) -> None:
-        """install_roster_script copies from sys._MEIPASS in the built app, so a
-        script missing from the spec silently never installs."""
-        spec = (
-            Path(__file__).resolve().parents[1] / "packaging" / "morrowfriends.spec"
-        ).read_text(encoding="utf-8")
+    def test_the_release_build_ships_the_script(self) -> None:
+        """The released app installs the script from packaging/tes3mp_custom_scripts
+        beside app/, so a script the build does not copy silently never installs."""
+        packaging = Path(__file__).resolve().parents[1] / "packaging"
+        build = (packaging / "build_portable.ps1").read_text(encoding="utf-8")
 
-        self.assertIn("morrowfriends_friendly_fire.lua", spec)
+        self.assertTrue(
+            (packaging / "tes3mp_custom_scripts" / "morrowfriends_friendly_fire.lua").is_file()
+        )
+        self.assertIn(r'Copy-Item "packaging\tes3mp_custom_scripts\*.lua"', build)
 
 
 if __name__ == "__main__":

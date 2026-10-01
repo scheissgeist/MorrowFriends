@@ -130,6 +130,19 @@ for ($i = 1; $i -le 5; $i++) {
 $checksum = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash
 Set-Content -LiteralPath "$zip.sha256" -Value "$checksum  $(Split-Path $zip -Leaf)" -Encoding ascii
 
+# 8. Builder's own Desktop shortcut to the staged app (no console flash: it
+# starts pythonw directly instead of going through the .bat).
+$shortcutPath = Join-Path $desktop "MorrowFriends.lnk"
+if (Test-Path $shortcutPath) { Remove-Item $shortcutPath -Force }
+$sc = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcutPath)
+$sc.TargetPath = Join-Path $runtime "pythonw.exe"
+$sc.Arguments = '"' + (Join-Path $stage "run.py") + '"'
+$sc.WorkingDirectory = $stage
+$sc.Description = "MorrowFriends launcher"
+$sc.IconLocation = (Join-Path $root "packaging\morrowfriends.ico") + ",0"
+$sc.Save()
+
+Write-Host "Shortcut: $shortcutPath"
 Write-Host "Stage: $stage"
 Write-Host "Zip: $zip"
 Write-Host "SHA-256: $checksum"
