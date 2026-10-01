@@ -5,8 +5,9 @@ no links to paste.
 
 1. Right-click the ZIP and choose Extract All. Do not run the EXE from inside
    the ZIP.
-2. Run MorrowFriends.exe. Keep it next to the _internal folder; the launcher
-   needs the files in there.
+2. Run MorrowFriends.bat (Windows may just show it as "MorrowFriends"). Keep
+   the whole folder together; the launcher needs the files in there. If
+   Windows asks whether to run it, choose Run / More info > Run anyway.
 3. Type your character name under "You are" if you already have one. First
    time: type the name you will create, or leave it blank - voice picks it up
    when you log in.

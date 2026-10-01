@@ -7,7 +7,8 @@ copyrights and license terms.
 |---|---|---|
 | CustomTkinter | Windows user interface | CC0-1.0 |
 | Pillow | Image handling | HPND |
-| PyInstaller | Windows packaging | GPL-2.0-or-later with the PyInstaller bootloader exception |
+| Python (embeddable distribution, in `runtime\`) | Runs the launcher | PSF-2.0 |
+| Tcl/Tk (in `runtime\`) | Windowing toolkit used by tkinter | Tcl/Tk license (BSD-style) |
 | websockets | WebSocket client | BSD-3-Clause |
 | pywebview | Embedded web view | BSD-3-Clause |
 | pythonnet | .NET integration | MIT |

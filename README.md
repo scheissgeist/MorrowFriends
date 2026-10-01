@@ -24,14 +24,18 @@ MorrowFriends does **not** include or redistribute Bethesda game files.
 ## Playing
 
 1. Download and extract `MorrowFriends-v0.7.5-Windows.zip`.
-2. Open the extracted `MorrowFriends` folder and run `MorrowFriends.exe`. Keep
-   it next to its `_internal` folder.
+2. Open the extracted `MorrowFriends` folder and run `MorrowFriends.bat`. Keep
+   the whole folder together.
 3. Enter the account name you already use in TES3MP, or leave it blank while
    creating your first character.
 4. Press **Play**.
 
-The current build is unsigned, so Windows may show a SmartScreen warning. Each
-release publishes a SHA-256 checksum so the downloaded ZIP can be verified.
+The ZIP contains no MorrowFriends-built executable. `MorrowFriends.bat` starts
+the bundled copy of Python (`runtime\pythonw.exe`, signed by the Python
+Software Foundation) on the launcher's source in `app\`, which you can read.
+Nothing is installed. Windows may still ask for confirmation the first time you
+run a downloaded `.bat`. Each release publishes a SHA-256 checksum so the
+downloaded ZIP can be verified.
 
 ## What the launcher does
 
@@ -66,19 +70,22 @@ python run.py
 ```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
-powershell -File packaging/build_bootloader.ps1 -Python .venv\Scripts\python.exe
-powershell -File packaging/build.ps1 -Python .venv\Scripts\python.exe
+.venv\Scripts\python -m pip install -r requirements.txt
+powershell -File packaging/build_portable.ps1 -Python .venv\Scripts\python.exe
+powershell -File packaging/defender_gate.ps1 -Path dist\portable\MorrowFriends\runtime\pythonw.exe
 ```
 
-`build_bootloader.ps1` compiles PyInstaller's bootloader from source (needs
-Visual Studio Build Tools), so the launcher does not share its bootloader bytes
-with every other PyInstaller-built program, including malware. v0.7.4, built
-with the stock bootloader, was flagged by several antivirus engines.
-`build.ps1` refuses to build with the stock bootloader.
+`build_portable.ps1` downloads python.org's embeddable Python (matching the
+venv's version), adds tkinter from the local Python install, installs the
+runtime dependencies beside it, and copies the launcher source. It writes
+`dist/portable/MorrowFriends/` and a versioned ZIP to the current user's
+Desktop, and fails if any `.exe` in the release lacks a valid signature.
 
-The build writes the one-folder app to `dist/MorrowFriends/` and a versioned
-ZIP to the current user's Desktop. Signing is used automatically when a local signing certificate
-is configured through `MORROWFRIENDS_PFX`.
+Releases up to v0.7.4 were a PyInstaller executable. Antivirus engines,
+including Microsoft Defender, flag fresh unsigned PyInstaller executables, so
+that packaging (`build.ps1`, `morrowfriends.spec`) is no longer used for
+releases. `defender_gate.ps1` checks files against the local Microsoft Defender
+the way a browser download is checked.
 
 ## Support and security
 
