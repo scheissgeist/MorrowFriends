@@ -22,6 +22,15 @@ backups/
 *.p12
 *.pem
 *.key
+*.ppk
+*.jks
+*.keystore
+id_rsa*
+id_ecdsa*
+id_ed25519*
+.netrc
+credentials*.json
+*.secret
 
 # Internal operations/history are deliberately not part of the public repo.
 docs/ADMIN_PANEL.md
