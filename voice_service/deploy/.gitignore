@@ -2,3 +2,7 @@
 caddy.yaml
 livekit.yaml
 caddy_data/
+# Shared-edge output and the staging files configure.py writes before the
+# atomic rename (.env.tmp holds the LiveKit secret and host token).
+caddy.morrowfriends
+*.tmp
